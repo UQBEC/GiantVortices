@@ -55,53 +55,53 @@ drawnow
 
 Nsamples = 1e6;
 for runs = 1%:10
-H = zeros(Nsamples,1);
-D = zeros(Nsamples,1);
-ell = zeros(Nsamples,1);
-%parpool(4)
-tic
-parfor (zz = 1:Nsamples,4)
- if floor (zz/10000) == zz/10000
-     disp(num2str(zz))
- end
+    H = zeros(Nsamples,1);
+    D = zeros(Nsamples,1);
+    ell = zeros(Nsamples,1);
+    %parpool(4)
+    tic
+    parfor (zz = 1:Nsamples,4)
+     if floor (zz/10000) == zz/10000
+         disp(num2str(zz))
+     end
 
-%Generate positions
-r = sqrt(rand(N,1));
-theta = 2*pi*rand(N,1);
-x = a*r.*cos(theta);
-y = b*r.*sin(theta);
-z = x+1i*y;
+    %Generate positions
+    r = sqrt(rand(N,1));
+    theta = 2*pi*rand(N,1);
+    x = a*r.*cos(theta);
+    y = b*r.*sin(theta);
+    z = x+1i*y;
 
-%Calculate energy (H), complex dipole moment (D = Dx + iDy) and n.n
-%distance (ell). Note Dx is the ordrer parameter for clustering in the
-%ellipse
-[zeta,dzeta] = ellipse2circlemap(z,m,a,b);
-H(zz) = ConformalEnergy(zeta,dzeta,kappa);
-D(zz) = kappa.'*z;
-ell(zz) = getNearestNeighbourDistance(x,y,N);
+    %Calculate energy (H), complex dipole moment (D = Dx + iDy) and n.n
+    %distance (ell). Note Dx is the order parameter for clustering in the
+    %ellipse
+    [zeta,dzeta] = ellipse2circlemap(z,m,a,b);
+    H(zz) = ConformalEnergy(zeta,dzeta,kappa);
+    D(zz) = kappa.'*z;
+    ell(zz) = getNearestNeighbourDistance(x,y,N);
 
-% Unfold this cell to plot the vortex positions
-%{
-figure(2)
-clf
-subplot(121)
-plot(z(1:end/2),'.r')
-hold on
-plot(z(end/2+1:end),'.b')
-plot(a*cos(phi) + 1i*b*sin(phi),'-k')
-axis square
-xlim([-150 150])
-ylim(xlim)
-subplot(122)
-plot(zeta(1:end/2),'.r')
-hold on
-plot(zeta(end/2+1:end),'.b')
-plot(exp(1i*phi),'-k')
-axis square
-xlim([-1.2 1.2])
-ylim(xlim)
-pause(0.1)
-%}
+    % Unfold this cell to plot the vortex positions
+    %{
+        figure(2)
+        clf
+        subplot(121)
+        plot(z(1:end/2),'.r')
+        hold on
+        plot(z(end/2+1:end),'.b')
+        plot(a*cos(phi) + 1i*b*sin(phi),'-k')
+        axis square
+        xlim([-150 150])
+        ylim(xlim)
+        subplot(122)
+        plot(zeta(1:end/2),'.r')
+        hold on
+        plot(zeta(end/2+1:end),'.b')
+        plot(exp(1i*phi),'-k')
+        axis square
+        xlim([-1.2 1.2])
+        ylim(xlim)
+        pause(0.1)
+    %}
 end
 toc
 
