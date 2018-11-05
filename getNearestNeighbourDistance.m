@@ -4,6 +4,6 @@ for ii = 1:N
     Rij(:,ii) = sqrt( (x-x(ii)).^2 + (y-y(ii)).^2 );
     Rij(ii,ii) = NaN; %exclude diagonal terms
 end
-ell = mean(nanmin(Rij));
+ell = mean(nanmin(Rij)); %average, excluding NaN values
 return
 
