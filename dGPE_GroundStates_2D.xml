@@ -1,0 +1,123 @@
+<simulation xmds-version="2">
+<name>dGPE_GroundState</name>
+<author>Matt Reeves</author>
+<description>
+Calculate ground state of BEC by propagating the dGPE in imaginary time
+</description>
+
+<features>
+
+<validation kind="run-time" />
+   <arguments>
+     <argument name="xmin" type="real" default_value="-120.0"/>
+     <argument name="xmax" type="real" default_value="120.0"/>
+     <argument name="ymin" type="real" default_value="-120.0"/>
+     <argument name="ymax" type="real" default_value="120.0"/>
+     <argument name="numGridPoints1" type="integer" default_value="480"/>
+     <argument name="numGridPoints2" type="integer" default_value="480"/>
+   </arguments>
+
+<auto_vectorise />
+<benchmark />
+<bing />
+<!--<openmp />  -->
+<fftw plan = "patient" />
+<globals>
+<![CDATA[
+	const double  Uint = 1;
+	const double gamma0 = 5.0;
+	const double V0 = 3.0;
+	const double sigmax = 140.0;
+        const double sigmay = 4.0;
+	const double sx = -210;
+	const double sy = -210;
+	const double Rx = 140.0;
+	const double Ry = 110.0;
+	const double mu0 = 1.0;
+	]]>
+</globals>
+
+</features>
+
+
+
+<geometry>
+<propagation_dimension> t </propagation_dimension>
+<transverse_dimensions>
+<dimension name="x" lattice="numGridPoints1"  domain="(xmin, xmax)" />	
+<dimension name="y" lattice="numGridPoints2"  domain="(ymin, ymax)" />
+</transverse_dimensions>
+</geometry>
+
+<vector name="potential" dimensions="x y" type="real">
+<components> V1 </components>
+<initialisation kind = "hdf5">
+<filename> RotatedEllipse2D.h5 </filename>  
+</initialisation>
+</vector>
+
+<vector name="wavefunction" dimensions="x y" type="complex">
+<components> phi</components>
+<initialisation>
+<dependencies> potential </dependencies>
+<![CDATA[
+
+if (V1<mu0)
+{
+	const double n0_root = sqrt((mu0-V1)/Uint);
+	phi = n0_root;
+}
+else 
+{
+phi = 0.0;
+}
+			 ]]>
+
+</initialisation>
+</vector>
+
+<sequence cycles = "1">
+<filter>
+<![CDATA[
+		 printf("Hello world from a filter segment!\n");
+		 ]]>
+</filter>
+
+
+<integrate algorithm="ARK45" interval="100" steps ='8000' tolerance="1e-5">
+<samples> 100</samples>
+
+<operators>
+<operator kind="ex" constant="yes" type = "complex">
+<operator_names>T </operator_names>
+<![CDATA[
+		 T = -0.5*(gamma0+i)*(kx*kx + ky*ky);  
+		 ]]>
+</operator>
+<integration_vectors>wavefunction</integration_vectors>
+<dependencies>potential</dependencies>
+<![CDATA[
+		 dphi_dt = T[phi] + (i+gamma0)*(mu0-V1-Uint*mod2(phi))*phi;
+		 ]]>
+</operators>
+
+</integrate>
+
+<breakpoint  filename="Groundstate.xsil" format="hdf5">
+<dependencies>wavefunction </dependencies>
+</breakpoint>
+
+</sequence>
+
+<output filename = "EllipseGroundstate" format = "hdf5"  >
+<sampling_group basis="x(0) y(0)" initial_sample="no">
+<moments> Natoms</moments>
+<dependencies> wavefunction </dependencies>
+<![CDATA[
+	Natoms = mod2(phi);
+		 ]]> 
+</sampling_group>
+
+</output>
+</simulation>
+
